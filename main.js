@@ -99,7 +99,7 @@ function adjustCameraForModel() {
 
 // GLTF Loader
 const gltfLoader = new GLTFLoader();
-const modelUrl = 'https://raw.githubusercontent.com/RSOS-ops/jules-test/main/HoodedCory_PlanarFace_BigWireframe_pck.glb';
+const modelUrl = 'https://raw.githubusercontent.com/RSOS-ops/jules-test/main/HoodedCory_PlanarFace_BigWireframe.glb';
 
 gltfLoader.load(
     modelUrl,
