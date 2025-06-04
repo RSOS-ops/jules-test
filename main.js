@@ -96,9 +96,9 @@ fontLoader.load(
             {
                 font: font,
                 size: 5,
-                depth: 0.01, // Make text virtually flat
-                curveSegments: 12, // curveSegments can remain for smoothness of character curves
-                bevelEnabled: false, // Ensure bevel is off
+                depth: 0, // Set text depth to 0 for true flatness
+                curveSegments: 12,
+                bevelEnabled: false,
             }
         );
 
