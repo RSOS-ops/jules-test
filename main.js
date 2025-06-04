@@ -1,126 +1,125 @@
 import * as THREE from 'three';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000); // Black background
+scene.background = new THREE.Color(0x000000);
 
 // Camera
-//fov, aspect, near, far
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-// camera.position.z = 50; // Initial Z, will be adjusted
 
 // Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true }); // Added antialias for smoother text
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Text Object
-let textMesh;
-const textToDisplay = "Cory Richard";
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
 
-function adjustCameraAndText() {
-    if (!textMesh) return;
+// Model
+let model; // To store the loaded model
 
-    // Ensure text bounding box is up-to-date if transformations were applied to geometry
-    // For a mesh, the boundingBox is in local space. We need world space for camera calculations.
-    // However, since our textMesh is at (0,0,0) and not rotated, local and world are similar for width.
+function adjustCameraForModel() {
+    if (!model) return;
 
-    textMesh.geometry.computeBoundingBox(); // Ensure fresh bounding box from geometry
-    const textBoundingBox = textMesh.geometry.boundingBox;
-    const actualTextWidth = textBoundingBox.max.x - textBoundingBox.min.x;
+    // Get model's bounding box
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    box.getSize(size);
 
-    // Calculate the visible width at the text's current Z position (which is 0)
-    // We want the text to take 80% of the screen width.
-    // The camera is looking along the -Z axis. Text is at Z = 0.
-    // visible_width = 2 * tan(fov/2) * distance_from_camera_to_object * aspect_ratio
+    // Determine the maximum dimension of the model
+    const maxDim = Math.max(size.x, size.y, size.z);
 
-    // We need to find the right camera.position.z
-    // Let targetScreenWidthRatio = 0.8
-    // targetTextScreenWidth = window.innerWidth * targetScreenWidthRatio
-    // projectedTextWidth = (actualTextWidth / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.position.z)) * window.innerWidth / camera.aspect
-    // This gets complicated quickly.
-    // A simpler approach: Set text scale to 1 initially. Find Z where its current size is 80% of view.
+    if (maxDim === 0) return; // Avoid division by zero if model is empty or size is zero
 
-    // Reset text scale to 1 to measure its "natural" size at a distance
-    textMesh.scale.set(1, 1, 1);
-    textMesh.geometry.computeBoundingBox(); // Recompute for safety, though it shouldn't change
-    const naturalTextWidth = textMesh.geometry.boundingBox.max.x - textMesh.geometry.boundingBox.min.x;
+    // Calculate effective FOV - using vertical FOV for calculations with aspect ratio
+    // const fov = THREE.MathUtils.degToRad(camera.fov);
+    // let cameraZ = Math.abs(size.y / 2 / Math.tan(fov / 2)); // Fit height by default
+    // if (camera.aspect < size.x / size.y) { // if width is the limiting factor
+    //     cameraZ = Math.abs(size.x / camera.aspect / 2 / Math.tan(fov / 2));
+    // }
+    // camera.position.z = cameraZ * 1.1; // Add 10% buffer, want 90% coverage
 
-    if (naturalTextWidth === 0) return; // Avoid division by zero if text width is 0
+    // Simpler approach: Fit the largest dimension (maxDim) into 90% of the view.
+    // Consider the camera's actual FOV (vertical) and aspect ratio.
+    // The distance 'd' from camera to plane where an object of height 'H' fits the view:
+    // d = (H/2) / tan(fov/2)
+    // For width 'W': d = (W/aspect / 2) / tan(fov/2)
+    // We want maxDim to be 90% of the larger of the frustum width or height at model's distance.
 
-    // Calculate the Z distance for the camera such that the naturalTextWidth spans 80% of the view.
-    // visibleWidth = 2 * Math.tan(fov/2) * Z
-    // We want naturalTextWidth / (camera.aspect) to be 0.8 * visibleWidth (horizontal FOV is tricky)
-    // Or, more directly for horizontal FOV:
-    // visibleWidthAtZ = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov * camera.aspect / 2)); // This is an approximation
-    // A more robust way for PerspectiveCamera:
-    // The distance (depth) at which an object of 'actualTextWidth' fills 'targetFrustumWidthRatio' (0.8) of the view.
-    // frustumWidth = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect;
-    // We want: actualTextWidth = 0.8 * frustumWidth
-    // actualTextWidth = 0.8 * (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z * camera.aspect)
-    // So, camera.position.z = actualTextWidth / (0.8 * 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect)
+    const targetCoverage = 0.90; // 90% of the screen
 
-    const targetWidthRatio = 0.8;
+    // Calculate distance needed to fit the model's largest dimension (maxDim)
+    // This considers fitting maxDim either to frustum height or frustum width
+    const verticalFov = THREE.MathUtils.degToRad(camera.fov);
+    let distanceBasedOnHeight = (size.y / targetCoverage) / (2 * Math.tan(verticalFov / 2));
+    let distanceBasedOnWidth = (size.x / targetCoverage) / (2 * Math.tan(verticalFov / 2) * camera.aspect);
+
+    // We need to ensure the *entire* model fits.
+    // If we base distance on model's height (size.y), its width (size.x) might be clipped or too small.
+    // We need to find the distance 'd' such that:
+    // Model_Visible_Height = 2 * d * tan(vFOV/2)
+    // Model_Visible_Width = 2 * d * tan(vFOV/2) * aspect
+    // We want size.y < targetCoverage * Model_Visible_Height AND size.x < targetCoverage * Model_Visible_Width
+
+    // Let's use the logic from the previous text scaling:
+    // Fit the model's bounding sphere radius, or use max dimension.
+    const boundingSphere = new THREE.Sphere();
+    box.getBoundingSphere(boundingSphere);
+    const objectAngularSize = camera.fov * (Math.PI / 180); // FOV in radians
+
+    // Heuristic: Use largest dimension (width or height) for fitting.
+    // This is similar to the text logic.
+    const dominantSize = Math.max(size.x, size.y); // Using X or Y for screen fitting
     const hFOV = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-    // Required distance = (object size / 2) / tan(horizontal_fov / 2)
-    let requiredDistance = (naturalTextWidth / targetWidthRatio / 2) / Math.tan(hFOV / 2);
+    // Required distance = (object size / 2) / tan(horizontal_fov / 2) for width fitting
+    // Required distance = (object size / 2) / tan(vertical_fov / 2) for height fitting
 
-    // Add a small buffer, or use the text's depth if it's significant
-    const textDepth = textMesh.geometry.boundingBox.max.z - textMesh.geometry.boundingBox.min.z;
-    camera.position.z = requiredDistance + textDepth; // Place camera just beyond the text's "width-defined" position
-
-    // Ensure the text is not clipped by the near plane
-    if (camera.position.z < camera.near) {
-        camera.position.z = camera.near + textDepth + 1; // Move further if too close
-        console.warn("Text was too close to near plane, adjusted camera.position.z");
+    let requiredDistance;
+    if (camera.aspect >= size.x / size.y) { // Screen is wider than model aspect ratio, fit by height
+        requiredDistance = (size.y / targetCoverage / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    } else { // Screen is narrower than model aspect ratio, fit by width
+        requiredDistance = (size.x / targetCoverage / 2) / Math.tan(hFOV / 2);
     }
 
-    // No scaling needed for the text itself if we adjust camera position correctly.
-    // Text remains at scale 1,1,1
-    camera.lookAt(scene.position); // Ensure camera looks at the origin where text is centered
+    camera.position.z = requiredDistance + (size.z / 2); // Add half depth of model as buffer
+
+    if (camera.position.z < camera.near) {
+        camera.position.z = camera.near + (size.z / 2) + 1; // Move further if too close
+    }
+
+    camera.lookAt(0, 0, 0); // Model is at origin
     camera.updateProjectionMatrix();
 }
 
 
-// Font Loading
-const fontLoader = new FontLoader();
-fontLoader.load(
-    'https://unpkg.com/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json', // Placeholder
-    (font) => {
-        console.log('Font loaded successfully!');
+// GLTF Loader
+const gltfLoader = new GLTFLoader();
+const modelUrl = 'https://raw.githubusercontent.com/RSOS-ops/jules-test/main/HoodedCory_PlanarFace_BigWireframe_pck.glb';
 
-        const textGeometry = new TextGeometry(
-            textToDisplay,
-            {
-                font: font,
-                size: 5,
-                depth: 0, // Set text depth to 0 for true flatness
-                curveSegments: 12,
-                bevelEnabled: false,
-            }
-        );
+gltfLoader.load(
+    modelUrl,
+    (gltf) => {
+        console.log('GLB model loaded successfully.');
+        model = gltf.scene;
+        scene.add(model);
 
-        textGeometry.computeBoundingBox();
-        textGeometry.translate(
-            -(textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x) / 2,
-            -(textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y) / 2,
-            -(textGeometry.boundingBox.max.z - textGeometry.boundingBox.min.z) / 2
-        );
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.sub(center);
 
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        scene.add(textMesh);
-        console.log('Text mesh added to scene.');
-
-        adjustCameraAndText(); // Adjust camera once text is loaded and added
+        console.log('Model added to scene and centered.');
+        adjustCameraForModel(); // Adjust camera AFTER model is loaded and centered
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
     },
     (error) => {
-        console.error('An error occurred loading the font:', error);
+        console.error('An error occurred loading the GLB model:', error);
     }
 );
 
@@ -134,7 +133,9 @@ animate();
 // Handle window resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
-    // camera.updateProjectionMatrix(); // adjustCameraAndText will call this
+    // camera.updateProjectionMatrix(); // adjustCameraForModel will call this
     renderer.setSize(window.innerWidth, window.innerHeight);
-    adjustCameraAndText(); // Re-adjust on resize
+    if (model) { // Ensure model is loaded before trying to adjust
+        adjustCameraForModel();
+    }
 });
