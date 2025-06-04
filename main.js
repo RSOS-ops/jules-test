@@ -30,6 +30,9 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
+// New Directional Light for the model
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 0.8);
+
 // Model
 let model; // To store the loaded model
 
@@ -120,10 +123,27 @@ gltfLoader.load(
 
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
+        model.position.sub(center); // Center the model at world origin
 
         console.log('Model added to scene and centered.');
-        adjustCameraForModel(); // Adjust camera AFTER model is loaded and centered
+
+        // Configure objectModelLight
+        // a. Create and Add Target
+        const modelLightTarget = new THREE.Object3D();
+        model.add(modelLightTarget); // Target is at model's local origin (0,0,0)
+
+        // b. Assign Target to Light
+        objectModelLight.target = modelLightTarget;
+
+        // c. Add Light to Model
+        model.add(objectModelLight);
+
+        // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
+        objectModelLight.position.set(0, 0, 5);
+
+        console.log("ObjectModelLight configured, parented to model, and positioned.");
+
+        adjustCameraForModel();
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
