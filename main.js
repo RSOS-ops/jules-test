@@ -95,13 +95,10 @@ fontLoader.load(
             textToDisplay,
             {
                 font: font,
-                size: 5, // This size is relative, actual screen size depends on camera
-                depth: 0.5,
-                curveSegments: 12,
-                bevelEnabled: false, // Simpler text for now
-                // bevelThickness: 0.2,
-                // bevelSize: 0.1,
-                // bevelSegments: 3
+                size: 5,
+                depth: 0.01, // Make text virtually flat
+                curveSegments: 12, // curveSegments can remain for smoothness of character curves
+                bevelEnabled: false, // Ensure bevel is off
             }
         );
 
