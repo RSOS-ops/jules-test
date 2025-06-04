@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; // Added this line
 
 // Scene
 const scene = new THREE.Scene();
@@ -12,6 +13,15 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// Controls
+let controls; // Declare controls variable
+controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0); // Orbit around the center of the scene (where the model is)
+controls.enableDamping = true;   // Enable damping (inertia)
+controls.dampingFactor = 0.05;   // Damping factor
+// controls.autoRotate = false; // Default is false, so not strictly needed
+// controls.screenSpacePanning = false; // Default is true, keep it for now
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -126,6 +136,12 @@ gltfLoader.load(
 // Render loop
 function animate() {
     requestAnimationFrame(animate);
+
+    // Required if controls.enableDamping or controls.autoRotate are set to true
+    if (controls.enableDamping) {
+        controls.update();
+    }
+
     renderer.render(scene, camera);
 }
 animate();
