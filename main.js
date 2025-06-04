@@ -8,6 +8,10 @@ scene.background = new THREE.Color(0x000000);
 
 // Camera
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+// Add headlight as a child of the camera
+camera.add(headlight);
+// Position the headlight slightly in front of the camera (local space of camera)
+headlight.position.set(0, 0, 1);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -29,6 +33,17 @@ scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
+
+// Second Directional Light (Headlight)
+const headlight = new THREE.DirectionalLight(0xffffff, 0.8); // White, moderate intensity
+// headlight.target will default to (0,0,0) world, which is correct for the model.
+
+// ... further modifications will happen in the next step (parenting to camera)
+// For now, just declare it. We will add it to the camera in the next step.
+// scene.add(headlight); // Will be added to camera, not directly to scene.
+// The camera itself (with the light as a child) needs to be added to the scene if not already.
+// However, the camera is used by renderer.render(scene, camera) - it doesn't need to be in the scene graph itself.
+// The headlight, being a child of the camera, will illuminate the scene based on the camera's transform.
 
 // Model
 let model; // To store the loaded model
