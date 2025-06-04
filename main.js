@@ -30,8 +30,8 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
-// New Object-Parented Directional Light - instantiated here, configured with model later
-const objectDirectionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+// New Directional Light for the model
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 0.8);
 
 // Model
 let model; // To store the loaded model
@@ -123,24 +123,27 @@ gltfLoader.load(
 
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center);
+        model.position.sub(center); // Center the model at world origin
 
         console.log('Model added to scene and centered.');
 
-        // Create and add target for objectDirectionalLight
-        const lightTarget = new THREE.Object3D();
-        model.add(lightTarget); // Add target to the model, it will be at model's local origin (0,0,0)
-        objectDirectionalLight.target = lightTarget;
+        // Configure objectModelLight
+        // a. Create and Add Target
+        const modelLightTarget = new THREE.Object3D();
+        model.add(modelLightTarget); // Target is at model's local origin (0,0,0)
 
-        // Add the light to the model
-        model.add(objectDirectionalLight);
-        // Position it in front of the model (local Z axis)
-        // The distance (e.g., 5) might need adjustment based on typical model scale.
-        objectDirectionalLight.position.set(0, 0, 5);
+        // b. Assign Target to Light
+        objectModelLight.target = modelLightTarget;
 
-        console.log("ObjectDirectionalLight added to model and positioned.");
+        // c. Add Light to Model
+        model.add(objectModelLight);
 
-        adjustCameraForModel(); // Adjust camera AFTER model is loaded and centered
+        // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
+        objectModelLight.position.set(0, 0, 5);
+
+        console.log("ObjectModelLight configured, parented to model, and positioned.");
+
+        adjustCameraForModel();
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
