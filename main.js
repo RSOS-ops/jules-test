@@ -31,7 +31,7 @@ directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
 // New Directional Light for the model
-const objectModelLight = new THREE.DirectionalLight(0xffffff, 4.0);
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 0.8);
 
 // Model
 let model; // To store the loaded model
@@ -139,7 +139,7 @@ gltfLoader.load(
         model.add(objectModelLight);
 
         // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
-        objectModelLight.position.set(0, 0, 5);
+        objectModelLight.position.set(0, 0, 2);
 
         console.log("ObjectModelLight configured, parented to model, and positioned.");
 
