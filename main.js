@@ -68,8 +68,8 @@ scene.add(directionalLightTarget); // The target object must be part of the scen
 directionalLight.target = directionalLightTarget;
 
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
-// Color: white (0xffffff)
-const spotLight = new THREE.SpotLight(0xffffff);
+
+const spotLight = new THREE.SpotLight(0xff0000);
 spotLight.intensity = 100; // Adjusted intensity
 spotLight.distance = 5; // Adjusted maximum range of the light.
 spotLight.angle = Math.PI / 36; // Cone angle in radians (5 degrees for a slightly wider focus).
