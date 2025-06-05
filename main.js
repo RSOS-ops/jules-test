@@ -42,9 +42,9 @@ scene.add(directionalLightHelper);
 console.log("DirectionalLightHelper added to the scene.");
 
 // Spotlight for the model
-const spotLight = new THREE.SpotLight(0xffffff, 5); // Intensity 5
+const spotLight = new THREE.SpotLight(0xffffff, 25); // Intensity 25
 spotLight.distance = 1; // Distance updated
-spotLight.angle = Math.PI / 18; // Angle set to 10 degrees
+spotLight.angle = Math.PI / 60; // Angle set to 3 degrees
 spotLight.penumbra = 0.5; // Penumbra 0.5
 spotLight.decay = 2; // Standard decay
 // scene.add(spotLight); // Will be added as a child of the model later
