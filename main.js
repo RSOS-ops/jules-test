@@ -30,8 +30,26 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
+// Explicitly set the target for the directional light
+const directionalLightTarget = new THREE.Object3D();
+directionalLightTarget.position.set(0, 0, 0); // Target the world origin
+scene.add(directionalLightTarget); // Add target to the scene
+directionalLight.target = directionalLightTarget;
+
+// Add DirectionalLightHelper for debugging
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // Second arg is helper size
+scene.add(directionalLightHelper);
+console.log("DirectionalLightHelper added to the scene.");
+
+// Spotlight for the model
+const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity 100
+spotLight.distance = 3; // Adjusted for new position at Z=2
+spotLight.angle = Math.PI / 60; // Angle set to 3 degrees
+spotLight.penumbra = 0.5; // Penumbra 0.5
+spotLight.decay = 2; // Standard decay
+// scene.add(spotLight); // Will be added as a child of the model later
+
 // New Directional Light for the model
-const objectModelLight = new THREE.DirectionalLight(0xffffff, 25);
 
 // Model
 let model; // To store the loaded model
@@ -127,21 +145,21 @@ gltfLoader.load(
 
         console.log('Model added to scene and centered.');
 
-        // Configure objectModelLight
-        // a. Create and Add Target
-        const modelLightTarget = new THREE.Object3D();
-        model.add(modelLightTarget); // Target is at model's local origin (0,0,0)
+        // Configure SpotLight
+        const spotLightTarget = new THREE.Object3D();
+        model.add(spotLightTarget); // Target is at model's local origin (0,0,0)
+        spotLightTarget.position.set(0, 0, 0); // Explicitly set target position if needed
 
-        // b. Assign Target to Light
-        objectModelLight.target = modelLightTarget;
+        spotLight.target = spotLightTarget;
+        model.add(spotLight);
+        spotLight.position.set(0, 0, -2); // Position updated
 
-        // c. Add Light to Model
-        model.add(objectModelLight);
+        console.log("SpotLight configured, parented to model, and positioned.");
 
-        // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
-        objectModelLight.position.set(0, 0, 4);
-
-        console.log("ObjectModelLight configured, parented to model, and positioned.");
+        // Add Spotlight Helper for debugging
+        const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+        scene.add(spotLightHelper);
+        console.log("SpotLightHelper added to the scene.");
 
         adjustCameraForModel();
     },
