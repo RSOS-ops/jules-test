@@ -56,6 +56,10 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
+// Optional: Add a helper to visualize the DirectionalLight.
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // Size of the helper visual
+scene.add(directionalLightHelper);
+
 // Target for Directional Light: Defines the point the light is aimed at.
 // The model is centered at (0,0,0), so the light targets this origin.
 const directionalLightTarget = new THREE.Object3D();
@@ -139,6 +143,11 @@ gltfLoader.load(
 
         spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
         model.add(spotLight); // Add the spotlight itself as a child of the model.
+
+        // Optional: Add a helper to visualize the SpotLight.
+        // This should be added to the main scene for visibility, not the model.
+        const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+        scene.add(spotLightHelper);
 
         // Adjust camera to fit the newly loaded model.
         adjustCameraForModel();
