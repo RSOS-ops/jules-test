@@ -51,9 +51,9 @@ scene.add(ambientLight);
 
 // Directional Light: Emits light from a specific direction, simulating a distant light source like the sun.
 // Color: white (0xffffff), Intensity: 0.8.
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 // Position the light source.
-directionalLight.position.set(5, 5, 5);
+directionalLight.position.set(3, 3, 5);
 scene.add(directionalLight);
 
 // Optional: Add a helper to visualize the DirectionalLight.
@@ -69,12 +69,12 @@ directionalLight.target = directionalLightTarget;
 
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
 const spotLight = new THREE.SpotLight(); // Initialize without color, set below
-spotLight.color.set(0xff0000); // Color remains red
-spotLight.intensity = 15; // Adjusted intensity
-spotLight.distance = .33; // Maximum range of the light (covers the 5-unit placement from model origin)
-spotLight.angle = Math.PI / 7; // Cone angle in radians (15 degrees for a wider cone).
+spotLight.color.set(0xffffff); // Color white
+spotLight.intensity = 27; // Adjusted intensity
+spotLight.distance = .5; // Maximum range of the light (covers the 5-unit placement from model origin)
+spotLight.angle = Math.PI / 8; // Cone angle in radians 
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
-spotLight.decay = 3; // Less attenuation with lower distance factor (current value is fine).
+spotLight.decay = .5; // Less attenuation with lower distance factor (current value is fine).
 // The SpotLight is configured and added as a child of the model after the model loads,
 // allowing it to move with the model if the model were to be animated or repositioned.
 // Intensity, angle, and distance are key properties for controlling the spotlight's appearance.
@@ -123,7 +123,7 @@ function adjustCameraForModel() {
 // Initialize GLTF Loader for loading .glb or .gltf models.
 const gltfLoader = new GLTFLoader();
 // URL of the 3D model to be loaded.
-const modelUrl = 'CoryHead_Planar.glb';
+const modelUrl = 'HoodedCory_OGHood_Lighter_DecimatedFace.glb';
 
 // Load the GLTF model.
 gltfLoader.load(
@@ -148,13 +148,13 @@ gltfLoader.load(
         // Configure and attach the SpotLight to the model.
         const spotLightTargetObject = new THREE.Object3D();
         model.add(spotLightTargetObject); // Add target as a child of the model.
-        spotLightTargetObject.position.set(0, 0, 0); // Target is at the model's local origin.
+        spotLightTargetObject.position.set(0, .13, .1); // Target is at the model's local origin.
 
         spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
         model.add(spotLight); // Add the spotlight itself as a child of the model.
         // Position the spotlight relative to the model's local coordinates.
         // Assuming +Z is forward from the model, this places the light 5 units in front of it.
-        spotLight.position.set(0, 0, .5);
+        spotLight.position.set(0, -.25, .2);
 
         // Optional: Add a helper to visualize the SpotLight.
         // This should be added to the main scene for visibility, not the model.
