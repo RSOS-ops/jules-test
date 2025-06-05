@@ -152,7 +152,6 @@ gltfLoader.load(
 
         spotLight.target = spotLightTarget;
         model.add(spotLight);
-        spotLight.position.set(0, 0, -2); // Position updated
 
         console.log("SpotLight configured, parented to model, and positioned.");
 
