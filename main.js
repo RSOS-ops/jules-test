@@ -24,9 +24,9 @@ controls.dampingFactor = 0.05;   // Damping factor
 // controls.screenSpacePanning = false; // Default is true, keep it for now
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 25);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
@@ -42,10 +42,10 @@ scene.add(directionalLightHelper);
 console.log("DirectionalLightHelper added to the scene.");
 
 // Spotlight for the model
-const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity updated
-spotLight.distance = 5; // Distance updated
-spotLight.angle = Math.PI / 8; // Angle updated
-spotLight.penumbra = 0.5; // Penumbra updated
+const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity 100
+spotLight.distance = 1; // Distance updated
+spotLight.angle = Math.PI / 4; // Angle updated
+spotLight.penumbra = 0.5; // Penumbra 0.5
 spotLight.decay = 2; // Standard decay
 // scene.add(spotLight); // Will be added as a child of the model later
 
@@ -152,7 +152,7 @@ gltfLoader.load(
 
         spotLight.target = spotLightTarget;
         model.add(spotLight);
-        spotLight.position.set(0, 0.5, 1.5); // Position updated
+        spotLight.position.set(0, 0.05, 0.1); // Position updated
 
         console.log("SpotLight configured, parented to model, and positioned.");
 
