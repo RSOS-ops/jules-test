@@ -139,7 +139,7 @@ gltfLoader.load(
         model.add(objectModelLight);
 
         // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
-        objectModelLight.position.set(0, 0, 1);
+        objectModelLight.position.set(0, 0, 4);
 
         console.log("ObjectModelLight configured, parented to model, and positioned.");
 
