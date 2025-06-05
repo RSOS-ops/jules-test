@@ -30,6 +30,14 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 25);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
+// Spotlight for the model
+const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity updated
+spotLight.distance = 5; // Distance updated
+spotLight.angle = Math.PI / 8; // Angle updated
+spotLight.penumbra = 0.5; // Penumbra updated
+spotLight.decay = 2; // Standard decay
+// scene.add(spotLight); // Will be added as a child of the model later
+
 // New Directional Light for the model
 
 // Model
@@ -125,6 +133,22 @@ gltfLoader.load(
         model.position.sub(center); // Center the model at world origin
 
         console.log('Model added to scene and centered.');
+
+        // Configure SpotLight
+        const spotLightTarget = new THREE.Object3D();
+        model.add(spotLightTarget); // Target is at model's local origin (0,0,0)
+        spotLightTarget.position.set(0, 0, 0); // Explicitly set target position if needed
+
+        spotLight.target = spotLightTarget;
+        model.add(spotLight);
+        spotLight.position.set(0, 0.5, 1.5); // Position updated
+
+        console.log("SpotLight configured, parented to model, and positioned.");
+
+        // Add Spotlight Helper for debugging
+        const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+        scene.add(spotLightHelper);
+        console.log("SpotLightHelper added to the scene.");
 
         adjustCameraForModel();
     },
