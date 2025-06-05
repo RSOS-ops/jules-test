@@ -43,7 +43,7 @@ console.log("DirectionalLightHelper added to the scene.");
 
 // Spotlight for the model
 const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity 100
-spotLight.distance = 1; // Distance updated
+spotLight.distance = 3; // Adjusted for new position at Z=2
 spotLight.angle = Math.PI / 60; // Angle set to 3 degrees
 spotLight.penumbra = 0.5; // Penumbra 0.5
 spotLight.decay = 2; // Standard decay
@@ -152,7 +152,6 @@ gltfLoader.load(
 
         spotLight.target = spotLightTarget;
         model.add(spotLight);
-        spotLight.position.set(0, 0, 0.25); // Position updated
 
         console.log("SpotLight configured, parented to model, and positioned.");
 
