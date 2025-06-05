@@ -26,12 +26,12 @@ controls.dampingFactor = 0.05;   // Damping factor
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
 // New Directional Light for the model
-const objectModelLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 5);
 
 // Model
 let model; // To store the loaded model
