@@ -51,7 +51,7 @@ scene.add(ambientLight);
 
 // Directional Light: Emits light from a specific direction, simulating a distant light source like the sun.
 // Color: white (0xffffff), Intensity: 0.8.
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 // Position the light source.
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
@@ -71,10 +71,27 @@ directionalLight.target = directionalLightTarget;
 const spotLight = new THREE.SpotLight(); // Initialize without color, set below
 spotLight.color.set(0xff0000); // Color remains red
 spotLight.intensity = 250; // Adjusted intensity
+spotLight.position.set(0, 0, 5);
 spotLight.distance = 5; // Maximum range of the light (covers the 5-unit placement from model origin)
-spotLight.angle = Math.PI / 36; // Cone angle in radians (15 degrees for a wider cone).
+spotLight.angle = Math.PI / 96; // Cone angle in radians (15 degrees for a wider cone).
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
 spotLight.decay = 1; // Less attenuation with distance (current value is fine).
+
+      // Configure and attach the SpotLight to the model.
+        const spotLightTargetObject = new THREE.Object3D();
+        model.add(spotLightTargetObject); // Add target as a child of the model.
+        spotLightTargetObject.position.set(0, 0, 0); // Target is at the model's local origin.
+
+        spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
+        model.add(spotLight); // Add the spotlight itself as a child of the model.
+        // Position the spotlight relative to the model's local coordinates.
+        // Assuming +Z is forward from the model, this places the light 5 units in front of it.
+      
+        // Optional: Add a helper to visualize the SpotLight.
+        // This should be added to the main scene for visibility, not the model.
+        const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+        scene.add(spotLightHelper);
+
 // The SpotLight is configured and added as a child of the model after the model loads,
 // allowing it to move with the model if the model were to be animated or repositioned.
 // Intensity, angle, and distance are key properties for controlling the spotlight's appearance.
@@ -145,22 +162,7 @@ gltfLoader.load(
         console.log('Model Bounding Box Size (after centering):', size);
         console.log('Model Scale:', model.scale);
 
-        // Configure and attach the SpotLight to the model.
-        const spotLightTargetObject = new THREE.Object3D();
-        model.add(spotLightTargetObject); // Add target as a child of the model.
-        spotLightTargetObject.position.set(0, 0, 0); // Target is at the model's local origin.
-
-        spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
-        model.add(spotLight); // Add the spotlight itself as a child of the model.
-        // Position the spotlight relative to the model's local coordinates.
-        // Assuming +Z is forward from the model, this places the light 5 units in front of it.
-        spotLight.position.set(0, 0, 5);
-
-        // Optional: Add a helper to visualize the SpotLight.
-        // This should be added to the main scene for visibility, not the model.
-        const spotLightHelper = new THREE.SpotLightHelper(spotLight);
-        scene.add(spotLightHelper);
-
+  
         // Adjust camera to fit the newly loaded model.
         adjustCameraForModel();
     },
