@@ -123,7 +123,7 @@ function adjustCameraForModel() {
 // Initialize GLTF Loader for loading .glb or .gltf models.
 const gltfLoader = new GLTFLoader();
 // URL of the 3D model to be loaded.
-const modelUrl = 'https://raw.githubusercontent.com/RSOS-ops/jules-test/main/HoodedCory_PlanarFace_BigWireframe.glb';
+const modelUrl = 'https://github.com/RSOS-ops/jules-test/raw/refs/heads/redlight-workflowtest/HoodedCory_BigWireFrame_MatTest.glb';
 
 // Load the GLTF model.
 gltfLoader.load(
