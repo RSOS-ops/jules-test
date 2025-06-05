@@ -30,6 +30,17 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 25);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
+// Explicitly set the target for the directional light
+const directionalLightTarget = new THREE.Object3D();
+directionalLightTarget.position.set(0, 0, 0); // Target the world origin
+scene.add(directionalLightTarget); // Add target to the scene
+directionalLight.target = directionalLightTarget;
+
+// Add DirectionalLightHelper for debugging
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // Second arg is helper size
+scene.add(directionalLightHelper);
+console.log("DirectionalLightHelper added to the scene.");
+
 // Spotlight for the model
 const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity updated
 spotLight.distance = 5; // Distance updated
