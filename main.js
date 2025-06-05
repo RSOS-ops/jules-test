@@ -51,7 +51,7 @@ scene.add(ambientLight);
 
 // Directional Light: Emits light from a specific direction, simulating a distant light source like the sun.
 // Color: white (0xffffff), Intensity: 0.8.
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
 // Position the light source.
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
@@ -70,9 +70,9 @@ directionalLight.target = directionalLightTarget;
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
 const spotLight = new THREE.SpotLight(); // Initialize without color, set below
 spotLight.color.set(0xff0000); // Set color to red
-spotLight.intensity = 100; // New intensity
-spotLight.distance = 10; // New maximum range of the light (covers the 5-unit placement)
-spotLight.angle = Math.PI / 90; // New cone angle in radians (2 degrees for a very tight focus).
+spotLight.intensity = 25; // New intensity
+spotLight.distance = 5; // New maximum range of the light (covers the 5-unit placement)
+spotLight.angle = Math.PI / 120; // New cone angle in radians (2 degrees for a very tight focus).
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
 spotLight.decay = 2; // Amount the light dims along the distance (current value is fine).
 // The SpotLight is configured and added as a child of the model after the model loads,
