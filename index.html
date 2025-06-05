@@ -10,6 +10,15 @@
     </style>
 </head>
 <body>
+    <!--
+        Import Map:
+        This allows us to use bare module specifiers ("three" and "three/addons/")
+        in our JavaScript modules (main.js) and have the browser resolve them to
+        the full URLs specified here. This is a modern way to handle JavaScript
+        dependencies directly in the browser without a build step for simple projects.
+        - "three": Points to the main Three.js module.
+        - "three/addons/": Points to the directory for Three.js addons (like GLTFLoader, OrbitControls).
+    -->
     <script type="importmap">
         {
             "imports": {
