@@ -71,10 +71,10 @@ directionalLight.target = directionalLightTarget;
 const spotLight = new THREE.SpotLight(); // Initialize without color, set below
 spotLight.color.set(0xff0000); // Color remains red
 spotLight.intensity = 15; // Adjusted intensity
-spotLight.distance = .25; // Maximum range of the light (covers the 5-unit placement from model origin)
-spotLight.angle = Math.PI / 3; // Cone angle in radians (15 degrees for a wider cone).
+spotLight.distance = .33; // Maximum range of the light (covers the 5-unit placement from model origin)
+spotLight.angle = Math.PI / 7; // Cone angle in radians (15 degrees for a wider cone).
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
-spotLight.decay = 2; // Less attenuation with distance (current value is fine).
+spotLight.decay = 3; // Less attenuation with lower distance factor (current value is fine).
 // The SpotLight is configured and added as a child of the model after the model loads,
 // allowing it to move with the model if the model were to be animated or repositioned.
 // Intensity, angle, and distance are key properties for controlling the spotlight's appearance.
@@ -123,7 +123,7 @@ function adjustCameraForModel() {
 // Initialize GLTF Loader for loading .glb or .gltf models.
 const gltfLoader = new GLTFLoader();
 // URL of the 3D model to be loaded.
-const modelUrl = './CoryHead_Planar.glb';
+const modelUrl = 'CoryHead_Planar.glb';
 
 // Load the GLTF model.
 gltfLoader.load(
