@@ -68,14 +68,16 @@ scene.add(directionalLightTarget); // The target object must be part of the scen
 directionalLight.target = directionalLightTarget;
 
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
-// Color: white (0xffffff), Intensity: 100 (can be strong, adjust as needed).
-const spotLight = new THREE.SpotLight(0xffffff, 100);
-spotLight.distance = 3; // Maximum range of the light.
-spotLight.angle = Math.PI / 60; // Cone angle in radians (3 degrees here for a tight focus).
+// Color: white (0xffffff)
+const spotLight = new THREE.SpotLight(0xffffff);
+spotLight.intensity = 25; // Adjusted intensity
+spotLight.distance = 15; // Adjusted maximum range of the light.
+spotLight.angle = Math.PI / 36; // Cone angle in radians (5 degrees for a slightly wider focus).
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened due to penumbra.
 spotLight.decay = 2; // Amount the light dims along the distance of the cone.
 // The SpotLight is configured and added as a child of the model after the model loads,
 // allowing it to move with the model if the model were to be animated or repositioned.
+// Intensity and angle are primary adjustments for visibility and focus.
 
 // --------------------------------------------------------------------------------
 // Model Setup & Loading
@@ -143,6 +145,9 @@ gltfLoader.load(
 
         spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
         model.add(spotLight); // Add the spotlight itself as a child of the model.
+        // Position the spotlight relative to the model's local coordinates.
+        // Assuming +Z is forward from the model, this places the light in front of it.
+        spotLight.position.set(0, 0, 10);
 
         // Optional: Add a helper to visualize the SpotLight.
         // This should be added to the main scene for visibility, not the model.
