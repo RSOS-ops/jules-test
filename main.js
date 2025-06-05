@@ -70,7 +70,7 @@ directionalLight.target = directionalLightTarget;
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
 const spotLight = new THREE.SpotLight(); // Initialize without color, set below
 spotLight.color.set(0xff0000); // Set color to red
-spotLight.intensity = 500; // New intensity
+spotLight.intensity = 25; // New intensity
 spotLight.distance = 5; // New maximum range of the light (covers the 5-unit placement)
 spotLight.angle = Math.PI / 120; // New cone angle in radians (2 degrees for a very tight focus).
 spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
