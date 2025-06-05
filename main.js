@@ -68,16 +68,16 @@ scene.add(directionalLightTarget); // The target object must be part of the scen
 directionalLight.target = directionalLightTarget;
 
 // SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
-
-const spotLight = new THREE.SpotLight(0xff0000);
-spotLight.intensity = 100; // Adjusted intensity
-spotLight.distance = 5; // Adjusted maximum range of the light.
-spotLight.angle = Math.PI / 36; // Cone angle in radians (5 degrees for a slightly wider focus).
-spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened due to penumbra.
-spotLight.decay = 2; // Amount the light dims along the distance of the cone.
+const spotLight = new THREE.SpotLight(); // Initialize without color, set below
+spotLight.color.set(0xff0000); // Set color to red
+spotLight.intensity = 100; // New intensity
+spotLight.distance = 10; // New maximum range of the light (covers the 5-unit placement)
+spotLight.angle = Math.PI / 90; // New cone angle in radians (2 degrees for a very tight focus).
+spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened (current value is fine).
+spotLight.decay = 2; // Amount the light dims along the distance (current value is fine).
 // The SpotLight is configured and added as a child of the model after the model loads,
 // allowing it to move with the model if the model were to be animated or repositioned.
-// Intensity and angle are primary adjustments for visibility and focus.
+// Intensity, angle, and distance are key properties for controlling the spotlight's appearance.
 
 // --------------------------------------------------------------------------------
 // Model Setup & Loading
@@ -146,8 +146,8 @@ gltfLoader.load(
         spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
         model.add(spotLight); // Add the spotlight itself as a child of the model.
         // Position the spotlight relative to the model's local coordinates.
-        // Assuming +Z is forward from the model, this places the light in front of it.
-        spotLight.position.set(0, 0, 10);
+        // Assuming +Z is forward from the model, this places the light 5 units in front of it.
+        spotLight.position.set(0, 0, 5);
 
         // Optional: Add a helper to visualize the SpotLight.
         // This should be added to the main scene for visibility, not the model.
