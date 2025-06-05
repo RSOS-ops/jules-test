@@ -24,14 +24,14 @@ controls.dampingFactor = 0.05;   // Damping factor
 // controls.screenSpacePanning = false; // Default is true, keep it for now
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
 // New Directional Light for the model
-const objectModelLight = new THREE.DirectionalLight(0xffffff, 5);
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 25);
 
 // Model
 let model; // To store the loaded model
@@ -139,7 +139,7 @@ gltfLoader.load(
         model.add(objectModelLight);
 
         // d. Set Light's Local Position (e.g., 5 units in front along model's local +Z axis)
-        objectModelLight.position.set(0, 0, 2);
+        objectModelLight.position.set(0, 0, 1);
 
         console.log("ObjectModelLight configured, parented to model, and positioned.");
 
