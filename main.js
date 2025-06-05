@@ -1,194 +1,207 @@
+// Import necessary Three.js modules
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; // Added this line
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// Scene
+// --------------------------------------------------------------------------------
+// Scene Setup
+// --------------------------------------------------------------------------------
+// Create the main scene container for all 3D objects.
 const scene = new THREE.Scene();
+// Set background color to black.
 scene.background = new THREE.Color(0x000000);
 
-// Camera
+// --------------------------------------------------------------------------------
+// Camera Setup
+// --------------------------------------------------------------------------------
+// Define a perspective camera for a 3D view.
+// Parameters: FOV (75 degrees), aspect ratio, near clipping plane, far clipping plane.
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-// Renderer
+// --------------------------------------------------------------------------------
+// Renderer Setup
+// --------------------------------------------------------------------------------
+// Create the WebGL renderer with antialiasing for smoother edges.
 const renderer = new THREE.WebGLRenderer({ antialias: true });
+// Set the renderer size to match the window dimensions.
 renderer.setSize(window.innerWidth, window.innerHeight);
+// Append the renderer's canvas element to the HTML body.
 document.body.appendChild(renderer.domElement);
 
-// Controls
-let controls; // Declare controls variable
-controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(0, 0, 0); // Orbit around the center of the scene (where the model is)
-controls.enableDamping = true;   // Enable damping (inertia)
-controls.dampingFactor = 0.05;   // Damping factor
-// controls.autoRotate = false; // Default is false, so not strictly needed
-// controls.screenSpacePanning = false; // Default is true, keep it for now
+// --------------------------------------------------------------------------------
+// Controls Setup
+// --------------------------------------------------------------------------------
+// Initialize OrbitControls for camera manipulation (zoom, pan, rotate).
+let controls = new OrbitControls(camera, renderer.domElement);
+// Set the point around which the camera will orbit (the model's center).
+controls.target.set(0, 0, 0);
+// Enable damping for smoother camera movement after user interaction.
+controls.enableDamping = true;
+// Set the damping factor (lower value means more gradual slowdown).
+controls.dampingFactor = 0.05;
+// Other OrbitControls settings like autoRotate or screenSpacePanning can be configured here if needed.
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0);
+// --------------------------------------------------------------------------------
+// Lighting Setup
+// --------------------------------------------------------------------------------
+// Ambient Light: Provides a basic level of illumination to the entire scene.
+// Color: white (0xffffff), Intensity: 0.5 (moderate).
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0);
-directionalLight.position.set(10, 10, 10);
+
+// Directional Light: Emits light from a specific direction, simulating a distant light source like the sun.
+// Color: white (0xffffff), Intensity: 0.8.
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+// Position the light source.
+directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
-// Explicitly set the target for the directional light
+// Optional: Add a helper to visualize the DirectionalLight.
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // Size of the helper visual
+scene.add(directionalLightHelper);
+
+// Target for Directional Light: Defines the point the light is aimed at.
+// The model is centered at (0,0,0), so the light targets this origin.
 const directionalLightTarget = new THREE.Object3D();
-directionalLightTarget.position.set(0, 0, 0); // Target the world origin
-scene.add(directionalLightTarget); // Add target to the scene
+directionalLightTarget.position.set(0, 0, 0);
+scene.add(directionalLightTarget); // The target object must be part of the scene.
 directionalLight.target = directionalLightTarget;
 
-// Add DirectionalLightHelper for debugging
-const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5); // Second arg is helper size
-scene.add(directionalLightHelper);
-console.log("DirectionalLightHelper added to the scene.");
+// SpotLight: Emits light from a point in a cone shape, used here to highlight the model.
+const spotLight = new THREE.SpotLight(); // Initialize without color, set below
+spotLight.color.set(0xff0000); // Set color to red
+spotLight.intensity = 25; // Adjusted intensity
+spotLight.distance = 15; // Adjusted maximum range of the light.
+spotLight.angle = Math.PI / 36; // Cone angle in radians (5 degrees for a slightly wider focus).
+spotLight.penumbra = 0.5; // Percent of the spotlight cone that is softened due to penumbra.
+spotLight.decay = 2; // Amount the light dims along the distance of the cone.
+// The SpotLight is configured and added as a child of the model after the model loads,
+// allowing it to move with the model if the model were to be animated or repositioned.
+// Intensity and angle are primary adjustments for visibility and focus.
 
-// Spotlight for the model
-const spotLight = new THREE.SpotLight(0xffffff, 100); // Intensity 100
-spotLight.distance = 3; // Adjusted for new position at Z=2
-spotLight.angle = Math.PI / 60; // Angle set to 3 degrees
-spotLight.penumbra = 0.5; // Penumbra 0.5
-spotLight.decay = 2; // Standard decay
-// scene.add(spotLight); // Will be added as a child of the model later
+// --------------------------------------------------------------------------------
+// Model Setup & Loading
+// --------------------------------------------------------------------------------
+// Variable to store the loaded 3D model.
+let model;
 
-// New Directional Light for the model
-
-// Model
-let model; // To store the loaded model
-
+// Function to adjust the camera to properly frame the loaded model.
 function adjustCameraForModel() {
-    if (!model) return;
+    if (!model) return; // Exit if the model hasn't been loaded yet.
 
-    // Get model's bounding box
+    // Create a bounding box around the model to get its dimensions.
     const box = new THREE.Box3().setFromObject(model);
     const size = new THREE.Vector3();
     box.getSize(size);
+    // const center = new THREE.Vector3(); // Model is already centered at origin.
+    // box.getCenter(center);
 
-    // Determine the maximum dimension of the model
+    // Avoid division by zero or issues if the model has no size.
+    if (size.x === 0 && size.y === 0 && size.z === 0) return;
+
+    // Determine the largest dimension of the model (width, height, or depth).
     const maxDim = Math.max(size.x, size.y, size.z);
 
-    if (maxDim === 0) return; // Avoid division by zero if model is empty or size is zero
+    // Calculate the distance needed for the camera to view the entire model.
+    // This formula uses the camera's vertical FOV and the model's largest dimension.
+    // It ensures the model fits within the camera's view frustum.
+    const distance = (maxDim / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
 
-    // Calculate effective FOV - using vertical FOV for calculations with aspect ratio
-    // const fov = THREE.MathUtils.degToRad(camera.fov);
-    // let cameraZ = Math.abs(size.y / 2 / Math.tan(fov / 2)); // Fit height by default
-    // if (camera.aspect < size.x / size.y) { // if width is the limiting factor
-    //     cameraZ = Math.abs(size.x / camera.aspect / 2 / Math.tan(fov / 2));
-    // }
-    // camera.position.z = cameraZ * 1.1; // Add 10% buffer, want 90% coverage
+    // Position the camera along the positive Z-axis.
+    // Add half of the model's depth (size.z / 2) to the calculated distance.
+    // This ensures the camera is 'distance' away from the front face of the model's bounding box.
+    camera.position.set(0, 0, distance + (size.z / 2));
 
-    // Simpler approach: Fit the largest dimension (maxDim) into 90% of the view.
-    // Consider the camera's actual FOV (vertical) and aspect ratio.
-    // The distance 'd' from camera to plane where an object of height 'H' fits the view:
-    // d = (H/2) / tan(fov/2)
-    // For width 'W': d = (W/aspect / 2) / tan(fov/2)
-    // We want maxDim to be 90% of the larger of the frustum width or height at model's distance.
+    // Point the camera to look at the model's center (which is the world origin 0,0,0).
+    camera.lookAt(0, 0, 0);
 
-    const targetCoverage = 0.90; // 90% of the screen
-
-    // Calculate distance needed to fit the model's largest dimension (maxDim)
-    // This considers fitting maxDim either to frustum height or frustum width
-    const verticalFov = THREE.MathUtils.degToRad(camera.fov);
-    let distanceBasedOnHeight = (size.y / targetCoverage) / (2 * Math.tan(verticalFov / 2));
-    let distanceBasedOnWidth = (size.x / targetCoverage) / (2 * Math.tan(verticalFov / 2) * camera.aspect);
-
-    // We need to ensure the *entire* model fits.
-    // If we base distance on model's height (size.y), its width (size.x) might be clipped or too small.
-    // We need to find the distance 'd' such that:
-    // Model_Visible_Height = 2 * d * tan(vFOV/2)
-    // Model_Visible_Width = 2 * d * tan(vFOV/2) * aspect
-    // We want size.y < targetCoverage * Model_Visible_Height AND size.x < targetCoverage * Model_Visible_Width
-
-    // Let's use the logic from the previous text scaling:
-    // Fit the model's bounding sphere radius, or use max dimension.
-    const boundingSphere = new THREE.Sphere();
-    box.getBoundingSphere(boundingSphere);
-    const objectAngularSize = camera.fov * (Math.PI / 180); // FOV in radians
-
-    // Heuristic: Use largest dimension (width or height) for fitting.
-    // This is similar to the text logic.
-    const dominantSize = Math.max(size.x, size.y); // Using X or Y for screen fitting
-    const hFOV = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
-    // Required distance = (object size / 2) / tan(horizontal_fov / 2) for width fitting
-    // Required distance = (object size / 2) / tan(vertical_fov / 2) for height fitting
-
-    let requiredDistance;
-    if (camera.aspect >= size.x / size.y) { // Screen is wider than model aspect ratio, fit by height
-        requiredDistance = (size.y / targetCoverage / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-    } else { // Screen is narrower than model aspect ratio, fit by width
-        requiredDistance = (size.x / targetCoverage / 2) / Math.tan(hFOV / 2);
-    }
-
-    camera.position.z = requiredDistance + (size.z / 2); // Add half depth of model as buffer
-
-    if (camera.position.z < camera.near) {
-        camera.position.z = camera.near + (size.z / 2) + 1; // Move further if too close
-    }
-
-    camera.lookAt(0, 0, 0); // Model is at origin
+    // Update the camera's projection matrix after changing its parameters.
+    // This is crucial for the changes to take effect.
     camera.updateProjectionMatrix();
 }
 
-
-// GLTF Loader
+// Initialize GLTF Loader for loading .glb or .gltf models.
 const gltfLoader = new GLTFLoader();
+// URL of the 3D model to be loaded.
 const modelUrl = 'https://raw.githubusercontent.com/RSOS-ops/jules-test/main/HoodedCory_PlanarFace_BigWireframe.glb';
 
+// Load the GLTF model.
 gltfLoader.load(
-    modelUrl,
-    (gltf) => {
-        console.log('GLB model loaded successfully.');
-        model = gltf.scene;
-        scene.add(model);
+    modelUrl, // Model URL
+    (gltf) => { // Success callback
+        model = gltf.scene; // Assign the loaded scene (model)
+        scene.add(model);   // Add the model to the main scene
 
+        // Center the model at the world origin (0,0,0).
+        // This simplifies camera positioning and lighting setup.
         const box = new THREE.Box3().setFromObject(model);
         const center = box.getCenter(new THREE.Vector3());
-        model.position.sub(center); // Center the model at world origin
+        model.position.sub(center);
 
-        console.log('Model added to scene and centered.');
+        // Configure and attach the SpotLight to the model.
+        const spotLightTargetObject = new THREE.Object3D();
+        model.add(spotLightTargetObject); // Add target as a child of the model.
+        spotLightTargetObject.position.set(0, 0, 0); // Target is at the model's local origin.
 
-        // Configure SpotLight
-        const spotLightTarget = new THREE.Object3D();
-        model.add(spotLightTarget); // Target is at model's local origin (0,0,0)
-        spotLightTarget.position.set(0, 0, 0); // Explicitly set target position if needed
+        spotLight.target = spotLightTargetObject; // Aim the spotlight at this target.
+        model.add(spotLight); // Add the spotlight itself as a child of the model.
+        // Position the spotlight relative to the model's local coordinates.
+        // Assuming +Z is forward from the model, this places the light in front of it.
+        spotLight.position.set(0, 0, 10);
 
-        spotLight.target = spotLightTarget;
-        model.add(spotLight);
-
-        console.log("SpotLight configured, parented to model, and positioned.");
-
-        // Add Spotlight Helper for debugging
+        // Optional: Add a helper to visualize the SpotLight.
+        // This should be added to the main scene for visibility, not the model.
         const spotLightHelper = new THREE.SpotLightHelper(spotLight);
         scene.add(spotLightHelper);
-        console.log("SpotLightHelper added to the scene.");
 
+        // Adjust camera to fit the newly loaded model.
         adjustCameraForModel();
     },
-    (xhr) => {
+    (xhr) => { // Progress callback
+        // Log loading progress to the console.
         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
     },
-    (error) => {
+    (error) => { // Error callback
+        // Log any errors that occur during model loading.
         console.error('An error occurred loading the GLB model:', error);
     }
 );
 
-// Render loop
+// --------------------------------------------------------------------------------
+// Animation Loop
+// --------------------------------------------------------------------------------
+// The `animate` function is called recursively to create a render loop.
 function animate() {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate); // Request the next frame.
 
-    // Required if controls.enableDamping or controls.autoRotate are set to true
+    // Update OrbitControls if damping is enabled.
+    // This ensures smooth camera movements continue after user input stops.
     if (controls.enableDamping) {
         controls.update();
     }
 
+    // Render the scene from the perspective of the camera.
     renderer.render(scene, camera);
 }
+// Start the animation loop.
 animate();
 
-// Handle window resize
+// --------------------------------------------------------------------------------
+// Event Listeners
+// --------------------------------------------------------------------------------
+// Handle window resize events to maintain correct aspect ratio and rendering size.
 window.addEventListener('resize', () => {
+    // Update camera's aspect ratio.
     camera.aspect = window.innerWidth / window.innerHeight;
-    // camera.updateProjectionMatrix(); // adjustCameraForModel will call this
+    // Update renderer's size.
     renderer.setSize(window.innerWidth, window.innerHeight);
-    if (model) { // Ensure model is loaded before trying to adjust
-        adjustCameraForModel();
+
+    // If the model is loaded, readjust the camera to fit it.
+    if (model) {
+        adjustCameraForModel(); // This function now includes camera.updateProjectionMatrix()
+    } else {
+        // If the model is not yet loaded, still update the projection matrix
+        // as the aspect ratio might have changed.
+        camera.updateProjectionMatrix();
     }
 });
