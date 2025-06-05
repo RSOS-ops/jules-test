@@ -31,7 +31,7 @@ directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
 // New Directional Light for the model
-const objectModelLight = new THREE.DirectionalLight(0xffffff, 0.8);
+const objectModelLight = new THREE.DirectionalLight(0xffffff, 4.0);
 
 // Model
 let model; // To store the loaded model
